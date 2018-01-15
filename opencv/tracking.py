@@ -18,18 +18,19 @@ while(True):
     # Bitwise-AND mask and original image
     res = cv2.bitwise_and(frame,frame, mask= mask)
 
+    # If not enough color detected, don't draw centroid
+    TRACKER_THRESHOLD = 500
 
     # Calculate centroid of mask
-
     M = cv2.moments(mask)
-    if M["m00"] != 0:
+    if M["m00"]/255 >= TRACKER_THRESHOLD:
         cx = int(M["m10"]/M["m00"])
         cy = int(M["m01"]/M["m00"])
 
-        print(M["m00"], M["m10"], M["m01"], cx, cy)
-
         # Draw centroid
         cv2.circle(frame, (cx, cy), 10, (255, 0, 0), -1)
+
+        print(M["m00"]/255, cx, cy)
 
 
     cv2.imshow('frame', frame)
