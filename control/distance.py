@@ -2,4 +2,12 @@
 # Returns the shortest distance from pos to path
 
 def distance(pos, path):
-    return 0
+    ### PARAMETERS ###
+
+    # Number of points we want to consider
+    # (we don't want to accidentally jump to another part of the path)
+    numPts = 10
+
+    ### CODE ###
+
+    cutPath = path[:numPts] if numPts < len(path) else path
