@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 while(True):
     # Capture frame-by-frame
@@ -12,9 +12,9 @@ while(True):
     gray = frame
 
     # Display the resulting frame
-    for i in range(len(gray)*0):
-        for j in range(len(gray[0])):
-            gray[i][j] = [0, 0, gray[i][j][0]]
+#   for i in range(len(gray)):
+#       for j in range(len(gray[0])):
+#           gray[i][j] = [0, 0, gray[i][j][0]]
     cv2.imshow('frame',gray)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
