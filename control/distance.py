@@ -8,7 +8,7 @@ def distance(pos, path):
     #find minimum distance to point
     d = distanceToPoint(pos,path[0])
     for point in path[1:] :
-        d = min(d,distanceToPoint(d,point))
+        d = min(d,distanceToPoint(pos,point))
 
     #find minimum distance to line
     for i in range(len(path)-1):
@@ -55,14 +55,15 @@ def shortestDistanceToLine(source,p1,p2,default_return):
     height_vector = (height_vector_x,height_vector_y)
 
     #try both height_vector directions from source and see if they are on the line
-    if(checkOnLine(source,height_vector,p1,p2)) return height
+    if(checkOnLine(source,height_vector,p1,p2)): 
+        return height
 
     negative_height = (-1*height_vector_x,-1*height_vector_y)
-    if(checkOnLine(source,negative_height,p1,p2)) return height
+    if(checkOnLine(source,negative_height,p1,p2)):
+        return height
 
     return default_return
 
 
 
 
-    
