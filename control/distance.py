@@ -1,22 +1,42 @@
-# path : ((real,real), (real,real) array) -> real
+# path : ((real,real), (real,real) array, (real,real)) -> real
 # path is all the points that we want to consider for distance
 # Returns the shortest distance from pos to path
 
 import math
 
-def distance(pos, path):
+def distance(pos, path, rotation):
     #find minimum distance to point
     d = distanceToPoint(pos,path[0])
+    distance_vector = resultantVector(pos,path[0])
     for point in path[1:] :
-        d = min(d,distanceToPoint(pos,point))
+        dist_test = distanceToPoint(pos,point)
+        if dist_test < d:
+            d = dist_test
+            distance_vector = resultantVector(pos,point)
 
     #find minimum distance to line
     for i in range(len(path)-1):
         p1 = path[i]
         p2 = path[i+1]
-        d = min(d,shortestDistanceToLine(pos,p1,p2,d))
+        dist_test = shortestDistanceToLine(pos,p1,p2,distance_vector)
+        dist_test_magnitude = distanceToPoint((0,0),dist_test)
+        if dist_test_magnitude < d:
+            distance_vector = dist_test
+            d = dist_test_magnitude
 
-    return d
+    if cross_product_positive(distance_vector,rotation):
+        return distance_vector
+    else: return negative_vector(distance_vector)
+
+def negative_vector(v):
+    return (-1*v[0],-1*v[1])
+
+def cross_product_positive(v1,v2):
+    #expects 2D vectors
+    return v1[0]*v2[1] - v1[1]*v2[0] > 0
+
+def resultantVector(p1,p2):
+    return (p2[0] - p1[0], p2[1] - p1[1])
 
 def distanceToPoint(source,target):
     #calculates distance between location and target
@@ -56,11 +76,11 @@ def shortestDistanceToLine(source,p1,p2,default_return):
 
     #try both height_vector directions from source and see if they are on the line
     if(checkOnLine(source,height_vector,p1,p2)): 
-        return height
+        return height_vector
 
-    negative_height = (-1*height_vector_x,-1*height_vector_y)
+    negative_height = negative_vector(height_vector)
     if(checkOnLine(source,negative_height,p1,p2)):
-        return height
+        return negative_height
 
     return default_return
 
