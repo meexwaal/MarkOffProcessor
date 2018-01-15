@@ -25,8 +25,8 @@ def distance(pos, path, rotation):
             d = dist_test_magnitude
 
     if cross_product_positive(distance_vector,rotation):
-        return distance_vector
-    else: return negative_vector(distance_vector)
+        return d
+    else: return -1*d
 
 def negative_vector(v):
     return (-1*v[0],-1*v[1])
