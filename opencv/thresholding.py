@@ -5,6 +5,8 @@ from matplotlib import pyplot as plt
 cap = cv2.VideoCapture(1)
 
 feed = 0
+blockSize = 11
+C = 2
 
 while(True):
     # Capture frame-by-frame
@@ -19,10 +21,10 @@ while(True):
         ret,img = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
     elif feed == 2:
         img = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_MEAN_C,
-            cv2.THRESH_BINARY,11,2)
+            cv2.THRESH_BINARY,blockSize,C)
     elif feed == 3:
         img = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-            cv2.THRESH_BINARY,11,2)
+            cv2.THRESH_BINARY,blockSize,C)
     titles = ['Original Image', 'Global Thresholding (v = 127)',
             'Adaptive Mean Thresholding', 'Adaptive Gaussian Thresholding']
 
@@ -39,6 +41,18 @@ while(True):
         feed = 2
     elif key == ord('4'):
         feed = 3
+    elif key == ord('w'):
+        blockSize += 2
+        print (blockSize)
+    elif key == ord('s'):
+        blockSize -=2
+        print (blockSize)
+    elif key == ord('d'):
+        C += 1
+        print (C)
+    elif key == ord('a'):
+        C -=1
+        print (C)
 
 # When everything done, release the capture
 cap.release()
