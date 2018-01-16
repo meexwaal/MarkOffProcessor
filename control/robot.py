@@ -1,4 +1,5 @@
 from distance import distance
+from pathSmooth import pathSmooth
 import PID
 from enum import Enum
 
@@ -77,6 +78,10 @@ class robot:
             return (angSpeed, -angSpeed)
         elif self.mode == self.Mode.LINE_FOLLOW:
             return (100+self.lineSpeed, 100-self.lineSpeed) # or something like that
+
+    def smoothPath(self):
+        self.path = pathSmooth(self.path)
+
 
     def followLine(self, path=None):
         if path != None:
