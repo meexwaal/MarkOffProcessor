@@ -3,15 +3,16 @@
 #include <bluefruit.h>
 
 // the best description of what I've done that my 1:30am brain can manage
-// in terminal,
-// sudo hciconfig hci0 up
-// sudo gatttool -b D6:88:F3:AA:42:29 -I -t random --sec-level=high
+/* in terminal,
+sudo hciconfig hci0 up
+sudo gatttool -b D6:88:F3:AA:42:29 -I -t random --sec-level=high
 // Then in the gatttool prompt,
-// connect
-// primary
-// char-desc
-// char-read-uuid 2902 # probably?
-// char-write-req 0x000b 0300 # This "enables notifications" or something. 
+connect
+primary
+char-desc
+char-read-uuid 2902 # probably?
+char-write-req 0x000b 0300 # This "enables notifications" or something. 
+*/
 // This is enough to get reading from arduino
 
 
