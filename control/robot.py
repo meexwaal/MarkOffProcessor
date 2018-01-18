@@ -4,9 +4,10 @@ import PID
 from enum import Enum
 import wrapper
 from numpy import clip, binary_repr
+import math
 
 ROTATION_SCALE = 190
-ROTATION_MID = 465
+ROTATION_MID = 465 - 370
 
 class robot:
 
@@ -76,8 +77,8 @@ class robot:
     def updateRot(self):
         inp = bt.read_last()
         if inp != None:
-            self.rot = ((inp[0] - ROTATION_MIDDLE)/ROTATION_SCALE,
-                        (inp[1] - ROTATION_MIDDLE)/ROTATION_SCALE)
+            self.rot = (-(inp[1] - ROTATION_MIDDLE),
+                        -(inp[0] - ROTATION_MIDDLE))
 
     def changeMode(self, newMode):
         self.mode = newMode
@@ -145,4 +146,4 @@ class robot:
 
     def anglify(self, rot):
         # TODO
-        return 0
+        return math.atan2(rot[1],rot[0])
