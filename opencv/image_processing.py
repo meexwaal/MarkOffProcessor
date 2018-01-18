@@ -14,10 +14,13 @@ def ImageBlocky(arr, blocksize):
   for i in range(0, len(arr), blocksize):
     for j in range(0, len(arr[0]), blocksize):
       ink = 255
+      count = 0
       for k in range(i, min(i + blocksize,len(arr))):
-        for l in range(j, min(j + blocksize,len(arr))):
+        for l in range(j, min(j + blocksize,len(arr[0]))):
           if arr[k][l] == 0:
-            ink = 0
+            count = count + 1
+      if count >= 16:
+        ink = 0
       grid[i // blocksize][j // blocksize] = ink
   return grid
 
