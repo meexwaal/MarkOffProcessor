@@ -7,12 +7,16 @@ import math
 def distance(pos, path, rotation):
     #find minimum distance to point
     d = distanceToPoint(pos,path[0])
+    shortest_point_index = 0;
     distance_vector = resultantVector(pos,path[0])
-    for point in path[1:] :
-        dist_test = distanceToPoint(pos,point)
+    for i in range(1,len(path)):
+        dist_test = distanceToPoint(pos,path[i])
         if dist_test < d:
             d = dist_test
-            distance_vector = resultantVector(pos,point)
+            distance_vector = resultantVector(pos,path[i])
+            shortest_point_index = i;
+
+    shortest_distance_to_point = d;
 
     #find minimum distance to line
     for i in range(len(path)-1):
@@ -25,8 +29,8 @@ def distance(pos, path, rotation):
             d = dist_test_magnitude
 
     if cross_product_positive(distance_vector,rotation):
-        return d
-    else: return -1*d
+        return d , shortest_distance_to_point , shortest_point_index
+    else: return -1*d , shortest_distance_to_point , shortest_point_index
 
 def negative_vector(v):
     return (-1*v[0],-1*v[1])
