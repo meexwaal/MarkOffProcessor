@@ -214,6 +214,8 @@ int8_t getByte() {
 }
 
 void loop() {
+  delay(5);
+
   // put your main code here, to run repeatedly:
   int8_t infoByte = (int8_t)((cccd >> 8) & 0xFF);
   Serial.print("infoByte"); Serial.println(infoByte, BIN);
@@ -247,7 +249,7 @@ void loop() {
   x_force = (uint8_t) x_force;
   y_force = (uint8_t) y_force;
 
-  digitalToggle(LED_RED);
+  //digitalToggle(LED_RED);
 
   if ( Bluefruit.connected() ) {
     uint8_t force_data[2] = { x_force, y_force };
