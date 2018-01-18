@@ -9,8 +9,6 @@ int ACCELEROMETER_Z = 2; // A0
 int LEFT_SERVO_PIN = 30;
 int RIGHT_SERVO_PIN = 27;
 
-uint16_t cccd = 0;
-
 Servo left_servo;
 Servo right_servo;
 
@@ -181,12 +179,27 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
 void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
 {
-  cccd = cccd_value;
   // Display the raw request packet
   Serial.print("CCCD Updated: ");
   //Serial.printBuffer(request->data, request->len);
-  Serial.print(cccd_value);
-  Serial.println("");
+  Serial.println(cccd_value);
+
+  int8_t infoByte = (int8_t)((cccd_value >> 8) & 0xFF);
+  Serial.print("infoByte"); Serial.println(infoByte, BIN);
+  int8_t speedByte = sign_extend_nibble(infoByte);
+  Serial.print("spedByte"); Serial.println(speedByte, BIN);
+
+  if (infoByte & (int8_t)0x80) {
+    // 1st bit is 1, so this byte is for the right motor
+    int right_motor_speed = (ZERO_SPD - MOTOR_SPEED_MODIFIER * speedByte);
+    Serial.println("Rite motor speed:"); Serial.println(right_motor_speed);
+    right_servo.write(right_motor_speed);
+  } else {
+    // 1st bit is 0, so this byte is for the left motor
+    int left_motor_speed = (ZERO_SPD + MOTOR_SPEED_MODIFIER * speedByte);
+    Serial.println("Left motor speed:"); Serial.println(left_motor_speed);
+    left_servo.write(left_motor_speed);
+  }
 
   // Check the characteristic this CCCD update is associated with in case
   // this handler is used for multiple CCCD records.
@@ -212,25 +225,7 @@ int8_t sign_extend_nibble(int8_t nibble)
 }
 
 void loop() {
-  delay(5);
-
-  // put your main code here, to run repeatedly:
-  int8_t infoByte = (int8_t)((cccd >> 8) & 0xFF);
-  Serial.print("infoByte"); Serial.println(infoByte, BIN);
-  int8_t speedByte = sign_extend_nibble((infoByte >> 4) & 0x0F);
-  Serial.print("spedByte"); Serial.println(speedByte, BIN);
-
-  if (infoByte & (int8_t)0x80) {
-    // 1st bit is 1, so this byte is for the right motor
-    int right_motor_speed = (ZERO_SPD - MOTOR_SPEED_MODIFIER * speedByte);
-    Serial.println("Rite motor speed:"); Serial.println(right_motor_speed);
-    right_servo.write(right_motor_speed);
-  } else {
-    // 1st bit is 0, so this byte is for the left motor
-    int left_motor_speed = (ZERO_SPD + MOTOR_SPEED_MODIFIER * speedByte);
-    Serial.println("Left motor speed:"); Serial.println(left_motor_speed);
-    left_servo.write(left_motor_speed);
-  }
+  delay(50);
 
   uint16_t x_force = analogRead(ACCELEROMETER_X);
   if (x_force < 370 || x_force > 560) {
@@ -257,7 +252,7 @@ void loop() {
     // If it is connected but CCCD is not enabled
     // The characteristic's value is still updated although notification is not sent
     if ( hrmc.notify(force_data, sizeof(force_data)) ) {
-      Serial.print("Forces updated: {x,y}");
+      //Serial.print("Forces updated: {x,y}");
     } else {
       Serial.println("ERROR: Notify not set in the CCCD or not connected!");
     }
