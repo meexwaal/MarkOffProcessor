@@ -101,9 +101,11 @@ class robot:
 
     # getDistance : void -> real
     def getDistance(self):
-        cutPath = (self.path[start_point_index:start_point_index + self.numPathPts]
-                   if self.numPathPts < len(self.path)
-                   else self.path)
+        cut_path_end_index = min(start_point_index + self.numPathPts,len(self.path))
+        if(cut_path_end_index <= start_point_index): self.stop
+
+        cutPath = self.path[start_point_index:cut_path_end_index]
+
         d,shortest_distance_to_point,shortest_point_index = distance(self.pos, cutPath, self.rot)
 
         if (shortest_distance_to_point < MAX_CLOSE_TO_POINT 
