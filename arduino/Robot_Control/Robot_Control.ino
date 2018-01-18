@@ -9,7 +9,7 @@ int ACCELEROMETER_Z = 4;
 int LEFT_SERVO_PIN = 7;
 int RIGHT_SERVO_PIN = 11;
 int8_t right_motor_spd = ZERO_SPD;
-int8_t left_motor_spd = ZERO_SPD; 
+int8_t left_motor_spd = ZERO_SPD;
 
 Servo left_servo;
 Servo right_servo;
@@ -29,7 +29,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason);
 void setup() {
   left_servo.attach(LEFT_SERVO_PIN);
   right_servo.attach(RIGHT_SERVO_PIN);
-  
+
   Serial.begin(115200);
   Serial.println("Arduino setting up and stuff hi MAX :)");
   Serial.println("-----------------------\n");
@@ -82,20 +82,20 @@ void startAdv(void)
 
   // Include Name
   Bluefruit.Advertising.addName();
-  
+
   /* Start Advertising
-   * - Enable auto advertising if disconnected
-   * - Interval:  fast mode = 20 ms, slow mode = 152.5 ms
-   * - Timeout for fast mode is 30 seconds
-   * - Start(timeout) with timeout = 0 will advertise forever (until connected)
-   * 
-   * For recommended advertising interval
-   * https://developer.apple.com/library/content/qa/qa1931/_index.html   
-   */
+     - Enable auto advertising if disconnected
+     - Interval:  fast mode = 20 ms, slow mode = 152.5 ms
+     - Timeout for fast mode is 30 seconds
+     - Start(timeout) with timeout = 0 will advertise forever (until connected)
+
+     For recommended advertising interval
+     https://developer.apple.com/library/content/qa/qa1931/_index.html
+  */
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244);    // in unit of 0.625 ms
   Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
-  Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds  
+  Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds
 }
 
 void setupHRM(void)
@@ -179,59 +179,63 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
 void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
 {
-    // Display the raw request packet
-    Serial.print("CCCD Updated: ");
-    //Serial.printBuffer(request->data, request->len);
-    Serial.print(cccd_value);
-    Serial.println("");
+  // Display the raw request packet
+  Serial.print("CCCD Updated: ");
+  //Serial.printBuffer(request->data, request->len);
+  Serial.print(cccd_value);
+  Serial.println("");
 
-    // Check the characteristic this CCCD update is associated with in case
-    // this handler is used for multiple CCCD records.
-    if (chr.uuid == hrmc.uuid) {
-        if (chr.notifyEnabled()) {
-            Serial.println("Heart Rate Measurement 'Notify' enabled");
-        } else {
-            Serial.println("Heart Rate Measurement 'Notify' disabled");
-        }
+  // Check the characteristic this CCCD update is associated with in case
+  // this handler is used for multiple CCCD records.
+  if (chr.uuid == hrmc.uuid) {
+    if (chr.notifyEnabled()) {
+      Serial.println("Heart Rate Measurement 'Notify' enabled");
+    } else {
+      Serial.println("Heart Rate Measurement 'Notify' disabled");
     }
+  }
 }
 
 int8_t sign_extend_nibble(int8_t nibble)
 {
-  if(nibble & 0x8 == 0x8) //negative nibble
-  //pad with ones
+  if (nibble & (int8_t)0x8) //negative nibble
+    //pad with ones
   {
-    return nibble | 0xF0;
+    return nibble | (int8_t)0xF0;
   }
   else return nibble;
 }
 
-int8_t getByte(){
+int8_t getByte() {
   return 0x3c; //00111100 for testing
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   int8_t infoByte = getByte();
-  int8_t left_byte = sign_extend_nibble(infoByte >> 4);
+  Serial.print("infoByte"); Serial.println(infoByte, BIN);
+  int8_t left_byte = sign_extend_nibble((infoByte >> 4) & 0x0F);
+  Serial.print("leftbyte"); Serial.println(left_byte, BIN);
   int8_t right_byte = sign_extend_nibble(infoByte & 0x0F);
+  Serial.print("riteByte"); Serial.println(right_byte, BIN);
 
-  int left_motor_speed = MOTOR_SPEED_MODIFIER*(ZERO_SPD + left_byte); // should be 93 from test
-  int right_motor_speed = MOTOR_SPEED_MODIFIER*(ZERO_SPD + right_byte); // should be 86 from test
+
+  int left_motor_speed = MOTOR_SPEED_MODIFIER * (ZERO_SPD + left_byte); // should be 93 from test
+  int right_motor_speed = MOTOR_SPEED_MODIFIER * (ZERO_SPD + right_byte); // should be 86 from test
   Serial.println("left motor speed:"); Serial.println(left_motor_speed);
   Serial.println("Right motor speed:"); Serial.println(right_motor_speed);
 
   left_servo.write(left_motor_speed);
   right_servo.write(right_motor_speed);
-  
+
   uint16_t x_force = analogRead(ACCELEROMETER_X);
-  if(x_force < 370 || x_force > 560) {
+  if (x_force < 370 || x_force > 560) {
     Serial.println("x_force not what we expected, it was:");
     Serial.println(x_force);
   }
   x_force -= 370;
   uint16_t y_force = analogRead(ACCELEROMETER_Y);
-  if(y_force < 370 || y_force > 560) {
+  if (y_force < 370 || y_force > 560) {
     Serial.println("y_force not what we expected, it was:");
     Serial.println(y_force);
   }
@@ -241,22 +245,22 @@ void loop() {
   y_force = (uint8_t) y_force;
 
   digitalToggle(LED_RED);
-  
+
   if ( Bluefruit.connected() ) {
-    uint8_t force_data[2] = { x_force, y_force };       
-    
+    uint8_t force_data[2] = { x_force, y_force };
+
     // Note: We use .notify instead of .write!
     // If it is connected but CCCD is not enabled
     // The characteristic's value is still updated although notification is not sent
-    if ( hrmc.notify(force_data, sizeof(force_data)) ){
+    if ( hrmc.notify(force_data, sizeof(force_data)) ) {
       Serial.print("Forces updated: {x,y}");
-    }else{
+    } else {
       Serial.println("ERROR: Notify not set in the CCCD or not connected!");
     }
   }
   else Serial.println("Bluefruit not connected");
-  
-  
+
+
 }
 
 
