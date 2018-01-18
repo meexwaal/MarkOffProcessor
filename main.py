@@ -6,13 +6,35 @@ from robot import *
 
 def main():
     cap = cV2.VideoCapture(1)
-    fgbg = cv2.createBackgroundSubtractorMOG2(500,64,False)
 
     bot = robot()
 
+    # mask
+    while(True):
+      ret,frame = cap.read()
+      img = processImage(frame)
+      cv2.imshow('Image',img)
+      key = cv2.waitKey(0) & 0xFF
+      if not isMasking():
+        if key == ord('m'):
+          toggleMask()
+        if key == ord('p'):
+          break
+    
+    # plan
+    botLoc = None
+    while(botLoc is None):
+      ret,frame = cap.read()
+      botloc = findRobot(frame)
+
+    ret,frame = cap.read()
+    img = processImage(frame)
+    path = findPath(img,botLoc)
+    setPath(bot,path)
+
+    # move
     while(True):
         ret,frame = cap.read()
-        fgbg.apply(frame)
 
         img = processImage(frame)
 
@@ -20,11 +42,6 @@ def main():
         if botLoc == None:
             continue
         update(bot, botLoc)
-
-        path = findPath(img,botLoc)
-
-        setPath(bot, path)
-
 
 if __name__=="__main__":
     main()

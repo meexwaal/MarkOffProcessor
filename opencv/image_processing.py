@@ -1,5 +1,12 @@
 import cv2
 import numpy as np
+from calibrate import *
+
+masking = False
+maskcount = None
+maskframes = 60
+mask = None
+blurSize = 5
 
 def ImageToBlackList(mat):
   list = []
@@ -31,14 +38,36 @@ def processImage(frame):
     # convert to gray
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # apply median filter
-    img = cv2.medianBlur(img,5)
+    img = cv2.medianBlur(img,blurSize)
     # apply adaptive gaussian thresholding
     img = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
         cv2.THRESH_BINARY,11,2)
     # apply median filter
-    img = cv2.medianBlur(img,5)
+    img = cv2.medianBlur(img,blurSize)
+    # handle maskingn
+    if masking:
+      if maskcount < maskframes:
+        maskcount = maskcount + 1
+        mask = cv2.bitwises_and(img,mask)
+      if maskcount == maskframes:
+        mask = cv2.erode(mask,kernel)
+        maskcount = maskcount + 1
+        blurSize = 3
+      img = cv2.bitwise_or(img,cv2.bitwise_not(mask))
 
     return img
+
+def toggleMask(img):
+  if masking:
+    masking = False
+    blurKernel = 5
+  else:
+    masking = True
+    maskcount = 0
+    mask = img
+
+def isMasking():
+  return masking
 
 def findRobot(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -66,12 +95,32 @@ def findRobot(frame):
 
 def findPath(img,start):
     #TODO
-    blocksize = 11
-    mat = ImageBlocky(img,blocksize)
-    goodMoves = ImageToBlackList(mat)
-    path = planPath(start,goodMoves,[],len(mat),len(mat[0]))
+    blocksize = 8
+    goodMoves = ImageToBlackList(ImageBlocky(img,blocksize))
+    badMoves = ImageToBlackList(ImageBlocky(mask,blocksize))
+    img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
+    for g in goodMoves:
+        (x,y)=g
+        x = x*blocksize-1
+        y = y*blocksize-1
+        g=(y,x)
+        cv2.line(img,g,g,(0,255,0))
+    for b in badMoves:
+        (x,y)=b
+        x = x*blocksize-1
+        y = y*blocksize-1
+        b=(y,x)
+        cv2.line(img,b,b,(0,0,255))
+    path = planPath((30,60),goodMoves,badMoves,len(mat),len(mat[0]))
+    lastx, lasty = None, None
+    for i in range(len(path)):
+        (x, y) = path[i]
+        x = x*blocksize-1
+        y = y*blocksize-1
+        img[x][y] = (255,0,0)
+        if i > 0:
+            cv2.line(img,(lasty,lastx),(y,x),(0,255,0)if i==1 else(255,0,0))
+        lastx, lasty = x, y
+    cv2.imshow('path', img)
     return path
           
-#jdef GridToImage(grid):
-#  Mat m(len(grid[0]), len(grid), CV_32SC1, grid)
-#  return m
