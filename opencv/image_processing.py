@@ -93,6 +93,10 @@ def findRobot(frame):
     else:
         return None
 
+def coordChange(p,blocksize):
+  (x,y) = p
+  return (y*blocksize-1,x*blocksize-1)
+
 def findPath(img,start):
     #TODO
     blocksize = 8
@@ -100,27 +104,18 @@ def findPath(img,start):
     badMoves = ImageToBlackList(ImageBlocky(mask,blocksize))
     img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
     for g in goodMoves:
-        (x,y)=g
-        x = x*blocksize-1
-        y = y*blocksize-1
-        g=(y,x)
-        cv2.line(img,g,g,(0,255,0))
+        p = coordChange(g,blocksize)
+        cv2.line(img,p,p,(0,255,0))
     for b in badMoves:
-        (x,y)=b
-        x = x*blocksize-1
-        y = y*blocksize-1
-        b=(y,x)
-        cv2.line(img,b,b,(0,0,255))
-    path = planPath((30,60),goodMoves,badMoves,len(mat),len(mat[0]))
-    lastx, lasty = None, None
+        p = coordChange(b,blocksize)
+        cv2.line(img,p,p,(0,0,255))
+    path = planPath(coordChange(start,blocksize),goodMoves,badMoves,len(mat),len(mat[0]))
+    last = None
     for i in range(len(path)):
-        (x, y) = path[i]
-        x = x*blocksize-1
-        y = y*blocksize-1
-        img[x][y] = (255,0,0)
-        if i > 0:
-            cv2.line(img,(lasty,lastx),(y,x),(0,255,0)if i==1 else(255,0,0))
-        lastx, lasty = x, y
+        p = coordChange(path[i],blocksize)
+        if last is not None:
+            cv2.line(img,last,p,(0,255,0)if i==1 else(255,0,0))
+        last = p
     cv2.imshow('path', img)
     return path
           
