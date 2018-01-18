@@ -104,8 +104,8 @@ class robot:
 
     def updateMotors(self):
         lm, rm = self.getMotors()
-        lb = binary_repr(int(lm*7.99)), width=4) # for DEEP and MEANINGFUL reasons
-        rb = binary_repr(int(rm*7.99)), width=4)
+        lb = binary_repr(int(lm*7.99), width=4) # for DEEP and MEANINGFUL reasons
+        rb = binary_repr(int(rm*7.99), width=4)
         self.bt.write(int(lb+rb, 2))
         
     def smoothPath(self):
