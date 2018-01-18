@@ -1,5 +1,5 @@
 
-#include <servo.h>
+#include <Servo.h>
 #include <bluefruit.h>
 int MOTOR_SPEED_MODIFIER = 1;
 int ZERO_SPD = 90;
@@ -213,11 +213,11 @@ int8_t getByte(){
 void loop() {
   // put your main code here, to run repeatedly:
   int8_t infoByte = getByte();
-  left_byte = sign_extend_nibble(infoByte >> 4);
-  right_byte = sign_extend_nibble(infoByte & 0x0F);
+  int8_t left_byte = sign_extend_nibble(infoByte >> 4);
+  int8_t right_byte = sign_extend_nibble(infoByte & 0x0F);
 
-  left_motor_speed = MOTOR_SPEED_MODIFIER*(ZERO_SPD + left_byte); // should be 93 from test
-  right_motor_speed = MOTOR_SPEED_MODIFIER*(ZERO_SPD + right_byte); // should be 86 from test
+  int left_motor_speed = MOTOR_SPEED_MODIFIER*(ZERO_SPD + left_byte); // should be 93 from test
+  int right_motor_speed = MOTOR_SPEED_MODIFIER*(ZERO_SPD + right_byte); // should be 86 from test
   Serial.println("left motor speed:"); Serial.println(left_motor_speed);
   Serial.println("Right motor speed:"); Serial.println(right_motor_speed);
 
