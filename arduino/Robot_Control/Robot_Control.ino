@@ -11,6 +11,8 @@ int RIGHT_SERVO_PIN = 11;
 int8_t right_motor_spd = ZERO_SPD;
 int8_t left_motor_spd = ZERO_SPD;
 
+uint16_t cccd = 0;
+
 Servo left_servo;
 Servo right_servo;
 
@@ -179,6 +181,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
 void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
 {
+  cccd = cccd_value;
   // Display the raw request packet
   Serial.print("CCCD Updated: ");
   //Serial.printBuffer(request->data, request->len);
@@ -212,7 +215,7 @@ int8_t getByte() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  int8_t infoByte = getByte();
+  int8_t infoByte = (int8_t)((cccd >> 8) & 0xFF);
   Serial.print("infoByte"); Serial.println(infoByte, BIN);
   int8_t left_byte = sign_extend_nibble((infoByte >> 4) & 0x0F);
   Serial.print("leftbyte"); Serial.println(left_byte, BIN);
@@ -222,7 +225,7 @@ void loop() {
 
   int left_motor_speed = MOTOR_SPEED_MODIFIER * (ZERO_SPD + left_byte); // should be 93 from test
   int right_motor_speed = MOTOR_SPEED_MODIFIER * (ZERO_SPD + right_byte); // should be 86 from test
-  Serial.println("left motor speed:"); Serial.println(left_motor_speed);
+  Serial.println("Reft motor speed:"); Serial.println(left_motor_speed);
   Serial.println("Right motor speed:"); Serial.println(right_motor_speed);
 
   left_servo.write(left_motor_speed);
