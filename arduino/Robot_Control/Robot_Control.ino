@@ -1,4 +1,6 @@
 
+#include <servo.h>
+#include <bluefruit.h>
 int MOTOR_SPEED_MODIFIER = 1;
 int ZERO_SPD = 90;
 int ACCELEROMETER_X = 2;
