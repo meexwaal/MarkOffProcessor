@@ -1,26 +1,32 @@
 import cv2
 import numpy as np
-from matplotlib import pyplot as plt
 from image_processing import *
 from path_planning import *
 
 cap = cv2.VideoCapture(1)
 
+ret, frame = cap.read()
+
 fgbg = cv2.createBackgroundSubtractorMOG2(500,64,False)
 
 initialKernel = 5
-feed = 7
+feed = 6
 blockSize = 11
 C = 2
-kern = 5
+kern = 3
 blurKernel = 5
+masking = False
+mask = None
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(kern,kern))
+maskcount = 0
+maskframes = 60
 
 while(True):
     # Capture frame-by-frame
     ret, frame = cap.read()
     img = frame
 
-    if feed != 7:
+    if feed < 7:
         img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         img = cv2.medianBlur(img,initialKernel)
 
@@ -29,11 +35,10 @@ while(True):
     elif feed == 2:
         img = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_MEAN_C,
             cv2.THRESH_BINARY,blockSize,C)
-    elif feed >= 3 and feed != 7:
+    elif feed >= 3 and feed < 7:
         img = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
             cv2.THRESH_BINARY,blockSize,C)
 
-    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(kern,kern))
     if feed == 4:
         img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
     elif feed == 5:
@@ -43,6 +48,27 @@ while(True):
     elif feed == 7:
         fgbg.apply(frame)
         fgbg.getBackgroundImage(img)
+    elif feed == 8:
+        fgbg.apply(frame)
+        fgbg.getBackgroundImage(img)
+        img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        img = cv2.medianBlur(img,blurKernel)
+        img = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv2.THRESH_BINARY,11,2)
+        img = cv2.medianBlur(img,blurKernel)
+
+    if masking:
+        if maskcount < maskframes:
+            maskcount = maskcount + 1
+            mask = cv2.bitwise_and(img, mask)
+        if maskcount == maskframes:
+            mask = cv2.erode(mask,kernel)
+            maskcount = maskcount + 1
+            blurKernel = 3
+        img = cv2.bitwise_or(img, cv2.bitwise_not(mask))
+        cv2.imshow('mask',mask)
+
+    img = cv2.medianBlur(img,blurKernel)
 
     titles = ['Original Image', 'Global Thresholding (v = 127)',
             'Adaptive Mean Thresholding', 'Adaptive Gaussian Thresholding']
@@ -68,6 +94,8 @@ while(True):
         feed = 6
     elif key == ord('8'):
         feed = 7
+    elif key == ord('9'):
+        feed = 8
     elif key == ord('w'):
         blockSize += 2
         print (blockSize)
@@ -98,6 +126,14 @@ while(True):
     elif key == ord('g'):
         initialKernel += 2
         print(initialKernel)
+    elif key == ord('m'):
+        if masking:
+            masking = False
+            blurKernel = 5
+        else:
+            masking = True
+            maskcount = 0
+            mask = img
 
 #print (img)
 #matrix = BWToBoolean(img)
@@ -107,11 +143,35 @@ while(True):
 #img = GridToImage(grid)
 #cv2.imshow('frame',img)
 
-blocksize = 11
+blocksize = 8
 mat = ImageBlocky(img,blocksize)
 goodMoves = ImageToBlackList(mat)
-path = planPath((0,0),goodMoves,[],len(mat),len(mat[0]))
+badMoves = None
+if masking:
+    badMoves = ImageToBlackList(ImageBlocky(mask,blocksize))
+goodMoves = [i for i in goodMoves if i not in badMoves]
+print(goodMoves)
+print("================================================")
+print(badMoves)
+print("================================================")
 img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+for g in goodMoves:
+    (x,y)=g
+    x = x*blocksize-1
+    y = y*blocksize-1
+    g=(y,x)
+    cv2.line(img,g,g,(0,255,0))
+for b in badMoves:
+    (x,y)=b
+    x = x*blocksize-1
+    y = y*blocksize-1
+    b=(y,x)
+    cv2.line(img,b,b,(0,0,255))
+cv2.imshow('moves',img)
+while (True):
+    if cv2.waitKey(1) & 0xFF == ord('p'):
+        break
+path = planPath((30,60),goodMoves,badMoves,len(mat),len(mat[0]))
 lastx, lasty = None, None
 for i in range(len(path)):
     (x, y) = path[i]
@@ -119,7 +179,7 @@ for i in range(len(path)):
     y = y*blocksize-1
     img[x][y] = (255,0,0)
     if i > 0:
-        cv2.line(img,(lasty,lastx),(y,x),(255,0,0))
+        cv2.line(img,(lasty,lastx),(y,x),(0,255,0)if i==1 else(255,0,0))
             #cv2.cvtColor(np.array([180 * i / len(path),255,255],dtype=np.uint8),cv2.COLOR_HSV2BGR))
     lastx, lasty = x, y
 cv2.imshow('path', img)
