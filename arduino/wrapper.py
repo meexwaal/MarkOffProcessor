@@ -84,13 +84,14 @@ class bt:
         self.out_writeable.close()
         print("Bye bye!")
 
-b = bt()
 
-for i in range(0, 256):
-    print(repr(b.read_last()))
-    time.sleep(10)
-    b.write(i)
+# example usage
+#b = bt()
 
-input()
-b.close()
+#b.write(0x3c) # 0011 1100
+#time.sleep(5)
+#b.write(0x8a) # 1000 1010
+    
+#input("Press Enter to quit")
+#b.close()
 
