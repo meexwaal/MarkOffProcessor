@@ -8,6 +8,7 @@ class robot:
     # Number of points from the path to consider for distance
     # (to keep the bot from getting confused)
     numPathPts = 20
+    MAX_CLOSE_TO_POINT = .3;
 
     # PID to do line following
     linePID = PID.PID()
@@ -41,6 +42,8 @@ class robot:
         self.lineSpeed = 0
         self.angSpeed = 0
         self.motor = (0,0)
+
+        self.start_point_index = 0
 
     def setPos(self, pos):
         self.pos = pos
@@ -98,10 +101,17 @@ class robot:
 
     # getDistance : void -> real
     def getDistance(self):
-        cutPath = (self.path[:self.numPathPts]
+        cutPath = (self.path[start_point_index:start_point_index + self.numPathPts]
                    if self.numPathPts < len(self.path)
                    else self.path)
-        return distance(self.pos, cutPath, self.rot)
+        d,shortest_distance_to_point,shortest_point_index = distance(self.pos, cutPath, self.rot)
+
+        if (shortest_distance_to_point < MAX_CLOSE_TO_POINT 
+            and shortest_point_index > 3):
+            self.start_point_index += shortest_point_index - 3
+
+        return d
+
 
     def anglify(self, rot):
         # TODO
