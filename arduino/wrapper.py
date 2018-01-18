@@ -79,7 +79,7 @@ class bt:
     def close(self):
         print("Closing and disconnecting...")
         self.proc.stdin.write("disconnect \n")
-        self.proc.stdin.write("")
+        self.proc.stdin.write("quit \n")
         self.out.close()
         self.out_writeable.close()
         print("Bye bye!")
