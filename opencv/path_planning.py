@@ -1,6 +1,17 @@
 import queue
 
 neighborLists = {}
+good = []
+
+def checkCameFrom(cameFrom):
+  for n in cameFrom:
+    x = n
+    while not x == None:
+      if x in cameFrom:
+        x = cameFrom[x]
+      else:
+        print(cameFrom)
+        print(n)
 
 def initGraph(x, y):
   return [[True for i in range(y)] for j in range(x)]
@@ -33,6 +44,8 @@ def aStarSearch(graph, start, goal, cameFrom):
     (ret, current) = pq.get()
 
     if current == goal:
+     # print(cameFrom)
+     # print(current)
       break
 
     for next in neighbors(current, graph):
@@ -43,7 +56,13 @@ def aStarSearch(graph, start, goal, cameFrom):
         pq.put((priority, next))
         cameFrom[next] = current
 
-  return cameFrom
+  if pq.empty():
+    print(start)
+    print(goal)
+    #print(cameFrom)
+    return False,None
+  checkCameFrom(cameFrom)
+  return True,cameFrom
 
 def removeNodes(nodesList, graph):
   for n in nodesList:
@@ -57,19 +76,25 @@ def planPathRecurse(start, nodesList, graph, path):
   cameFrom = {}
   cameFrom[start] = None
   mindist = None
+  minnode = None
   for node in nodesList:
     if mindist == None or dist(start, node) < mindist:
       mindist = dist(start,node)
       minnode = node
-  cameFrom = aStarSearch(graph, start, minnode, cameFrom)
+  success,cameFrom = aStarSearch(graph, start, minnode, cameFrom)
   nodesList.remove(minnode)
-  pathNew = reconstructPath(cameFrom, minnode)
-  pathNew.pop()
-  pathNew.reverse()
-  path.extend(pathNew)
+  if success:
+    pathNew = reconstructPath(cameFrom, minnode)
+    pathNew.pop()
+    pathNew.reverse()
+    path.extend(pathNew)
+    checkCameFrom(cameFrom)
+  else:
+    minnode = start
   return planPathRecurse(minnode, nodesList, graph, path)
 
 def reconstructPath(cameFrom, end):
+  checkCameFrom(cameFrom)
   path = []
   while not end == None:
     path.append(end)
@@ -79,4 +104,5 @@ def reconstructPath(cameFrom, end):
 def planPath(start, goodNodes, badNodes, x, y):
   graph = initGraph(x, y)
   graph = removeNodes(badNodes, graph)
+  good = goodNodes
   return planPathRecurse(start, goodNodes, graph, [start])

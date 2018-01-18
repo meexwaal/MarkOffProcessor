@@ -2,6 +2,11 @@ from distance import distance
 from pathSmooth import pathSmooth
 import PID
 from enum import Enum
+import wrapper
+from numpy import clip, binary_repr
+
+ROTATION_SCALE = 190
+ROTATION_MID = 465
 
 class robot:
 
@@ -16,6 +21,9 @@ class robot:
     # PID to do rotating to an angle
     rotPID = PID.PID()
 
+    # Class to do the bluetooth
+    bt = wrapper.bt()
+
     class Mode(Enum):
         STILL = 0
         ROTATING = 1
@@ -23,13 +31,13 @@ class robot:
 
     ### Fields:
     # pos : (real,real) - the position of the bot on the grid
-    # rot : (real,real) - the orientation of bot as XY accelerations
+    # rot : (real,real) - the orientation of bot as XY accelerations (scaled to -1 to 1)
     # path : (real,real) array - the list of points on the path
     # rotTarget : real - angle to rotate to
     # mode : mode_enum - what the current mode should be
     # lineSpeed : real - result of linePID, which is like angular speed
     # angSpeed : real - result of rotPID, which is actually angular speed
-    # motor : (int,int) - the values to drive the motor
+    # motor : (real,real) - the values to drive the motor (-1 to 1 for each motor)
 
     def __init__(self, pos = None, rot=None, path=None, rotTarget=None,
                  mode=Mode.STILL):
@@ -47,14 +55,12 @@ class robot:
 
     def setPos(self, pos):
         self.pos = pos
-    def setRot(self, rot):
-        self.rot = rot
     def setPath(self, path):
         self.path = path
 
     # update should be called at a regular interval
     # (derivative should be wrt time, so needs a constant delta-T)
-    def update(self, pos, rot=None):
+    def update(self, pos):
         self.pos = pos
         if rot != None:
             self.rot = rot
@@ -63,6 +69,15 @@ class robot:
             self.lineSpeed = self.linePID.update(self.getDistance())
         elif self.mode == self.Mode.ROTATING:
             self.angSpeed = self.rotPID.update(self.anglify(self.rot))
+
+        self.updateRot()
+        self.updateMotors()
+
+    def updateRot(self):
+        inp = bt.read_last()
+        if inp != None:
+            self.rot = ((inp[0] - ROTATION_MIDDLE)/ROTATION_SCALE,
+                        (inp[1] - ROTATION_MIDDLE)/ROTATION_SCALE)
 
     def changeMode(self, newMode):
         self.mode = newMode
@@ -76,12 +91,23 @@ class robot:
     def getMotors(self):
         # TODO: make the numbers actually make sense
         if self.mode == self.Mode.STILL:
-            return (0,0)
+            res = (0,0)
         elif self.mode == self.Mode.ROTATING:
-            return (angSpeed, -angSpeed)
+            res = (angSpeed, -angSpeed)
         elif self.mode == self.Mode.LINE_FOLLOW:
-            return (100+self.lineSpeed, 100-self.lineSpeed) # or something like that
+            res = (0.1+self.lineSpeed, 0.1-self.lineSpeed) # or something like that
+        else:
+            print("[ERROR] literally the mode isn't a mode")
+            return None
 
+        return (clip(res[0],-1,1), clip(res[1],-1,1))
+
+    def updateMotors(self):
+        lm, rm = self.getMotors()
+        lb = binary_repr(int(lm*7.99), width=4) # for DEEP and MEANINGFUL reasons
+        rb = binary_repr(int(rm*7.99), width=4)
+        self.bt.write(int(lb+rb, 2))
+        
     def smoothPath(self):
         self.path = pathSmooth(self.path)
 
@@ -90,7 +116,7 @@ class robot:
         if path != None:
             self.setPath(path)
         self.changeMode(self.Mode.LINE_FOLLOW)
-        #
+        
     def rotateTo(self, angle=None):
         if angle != None:
             self.rotTarget = angle
