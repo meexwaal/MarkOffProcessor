@@ -1,8 +1,16 @@
 
 int MOTOR_SPEED_MODIFIER = 1;
 int ZERO_SPD = 90;
+int ACCELEROMETER_X = 2;
+int ACCELEROMETER_Y = 3;
+int ACCELEROMETER_Z = 4;
+int LEFT_SERVO_PIN = 7;
+int RIGHT_SERVO_PIN = 11;
 int8_t right_motor_spd = ZERO_SPD;
 int8_t left_motor_spd = ZERO_SPD; 
+
+Servo left_servo;
+Servo right_servo;
 
 BLEService        hrms = BLEService(UUID16_SVC_HEART_RATE);
 BLECharacteristic hrmc = BLECharacteristic(UUID16_CHR_HEART_RATE_MEASUREMENT);
@@ -17,6 +25,9 @@ void connect_callback(uint16_t conn_handle);
 void disconnect_callback(uint16_t conn_handle, uint8_t reason);
 
 void setup() {
+  left_servo.attach(LEFT_SERVO_PIN);
+  right_servo.attach(RIGHT_SERVO_PIN);
+  
   Serial.begin(115200);
   Serial.println("Arduino setting up and stuff hi MAX :)");
   Serial.println("-----------------------\n");
@@ -208,15 +219,16 @@ void loop() {
   Serial.println("left motor speed:"); Serial.println(left_motor_speed);
   Serial.println("Right motor speed:"); Serial.println(right_motor_speed);
 
-  //write motor speeds here
+  left_servo.write(left_motor_speed);
+  right_servo.write(right_motor_speed);
   
-  uint16_t x_force = ? 
+  uint16_t x_force = analogRead(ACCELEROMETER_X);
   if(x_force < 370 || x_force > 560) {
     Serial.println("x_force not what we expected, it was:");
     Serial.println(x_force);
   }
   x_force -= 370;
-  uint16_t y_force = ?
+  uint16_t y_force = analogRead(ACCELEROMETER_Y);
   if(y_force < 370 || y_force > 560) {
     Serial.println("y_force not what we expected, it was:");
     Serial.println(y_force);
