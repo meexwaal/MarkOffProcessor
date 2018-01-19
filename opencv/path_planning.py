@@ -1,17 +1,6 @@
 import queue
 
 neighborLists = {}
-good = []
-
-def checkCameFrom(cameFrom):
-  for n in cameFrom:
-    x = n
-    while not x == None:
-      if x in cameFrom:
-        x = cameFrom[x]
-      else:
-        print(cameFrom)
-        print(n)
 
 def initGraph(x, y):
   return [[True for i in range(y)] for j in range(x)]
@@ -44,8 +33,6 @@ def aStarSearch(graph, start, goal, cameFrom):
     (ret, current) = pq.get()
 
     if current == goal:
-     # print(cameFrom)
-     # print(current)
       break
 
     for next in neighbors(current, graph):
@@ -57,11 +44,7 @@ def aStarSearch(graph, start, goal, cameFrom):
         cameFrom[next] = current
 
   if pq.empty():
-    print(start)
-    print(goal)
-    #print(cameFrom)
     return False,None
-  checkCameFrom(cameFrom)
   return True,cameFrom
 
 def removeNodes(nodesList, graph):
@@ -88,13 +71,11 @@ def planPathRecurse(start, nodesList, graph, path):
     pathNew.pop()
     pathNew.reverse()
     path.extend(pathNew)
-    checkCameFrom(cameFrom)
   else:
     minnode = start
   return planPathRecurse(minnode, nodesList, graph, path)
 
 def reconstructPath(cameFrom, end):
-  checkCameFrom(cameFrom)
   path = []
   while not end == None:
     path.append(end)
@@ -104,5 +85,4 @@ def reconstructPath(cameFrom, end):
 def planPath(start, goodNodes, badNodes, x, y):
   graph = initGraph(x, y)
   graph = removeNodes(badNodes, graph)
-  good = goodNodes
   return planPathRecurse(start, goodNodes, graph, [start])
