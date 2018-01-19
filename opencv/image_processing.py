@@ -33,8 +33,6 @@ def ImageBlocky(arr, blocksize):
 
 def processImage(frame):
     img = frame
-    # get background
-    fgbg.getBackgroundImage(img)
     # convert to gray
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # apply median filter
@@ -95,7 +93,7 @@ def findRobot(frame):
 
 def coordChange(p,blocksize):
   (x,y) = p
-  return (y*blocksize-1,x*blocksize-1)
+  return (y*blocksize+blocksize//2,x*blocksize+blocksize//2)
 
 def findPath(img,start):
     #TODO
@@ -109,10 +107,12 @@ def findPath(img,start):
     for b in badMoves:
         p = coordChange(b,blocksize)
         cv2.line(img,p,p,(0,0,255))
-    path = planPath(coordChange(start,blocksize),goodMoves,badMoves,len(mat),len(mat[0]))
+    (x,y) = start
+    path = planPath((x//blockstart,y//blockstart),goodMoves,badMoves,len(mat),len(mat[0]))
     last = None
     for i in range(len(path)):
         p = coordChange(path[i],blocksize)
+        path[i] = p
         if last is not None:
             cv2.line(img,last,p,(0,255,0)if i==1 else(255,0,0))
         last = p
