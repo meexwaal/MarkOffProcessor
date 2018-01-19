@@ -5,7 +5,7 @@ from path_planning import *
 from robot import *
 
 def main():
-    cap = cV2.VideoCapture(1)
+    cap = cv2.VideoCapture(1)
 
     bot = robot()
 
@@ -30,7 +30,7 @@ def main():
     ret,frame = cap.read()
     img = processImage(frame)
     path = findPath(img,botLoc)
-    setPath(bot,path)
+    bot.followLine(path)
 
     # move
     while(True):
@@ -41,7 +41,7 @@ def main():
         botLoc = findRobot(frame)
         if botLoc == None:
             continue
-        update(bot, botLoc)
+        bot.update(botLoc)
 
 if __name__=="__main__":
     main()
