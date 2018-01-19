@@ -103,6 +103,7 @@ def findPath(img,start):
     blocksize = 8
     mat = ImageBlocky(img,blocksize)
     goodMoves = ImageToBlackList(mat)
+    mask = cv2.circle(mask,start,48,1,-1)
     badMoves = ImageToBlackList(ImageBlocky(mask,blocksize))
     img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
     for g in goodMoves:
