@@ -3,7 +3,7 @@ import numpy as np
 from image_processing import *
 from path_planning import *
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(2)
 
 ret, frame = cap.read()
 

@@ -6,6 +6,7 @@ import wrapper
 from numpy import clip, binary_repr
 import math
 
+
 ROTATION_SCALE = 190
 ROTATION_MID = 465 - 370
 
@@ -15,15 +16,6 @@ class robot:
     # (to keep the bot from getting confused)
     numPathPts = 20
     MAX_CLOSE_TO_POINT = .3;
-
-    # PID to do line following
-    linePID = PID.PID()
-
-    # PID to do rotating to an angle
-    rotPID = PID.PID()
-
-    # Class to do the bluetooth
-    bt = wrapper.bt()
 
     class Mode(Enum):
         STILL = 0
@@ -53,6 +45,15 @@ class robot:
         self.motor = (0,0)
 
         self.start_point_index = 0
+
+        # Class to do the bluetooth
+        self.bt = wrapper.bt()
+
+        # PID to do line following
+        linePID = PID.PID()
+
+        # PID to do rotating to an angle
+        rotPID = PID.PID()
 
     def setPos(self, pos):
         self.pos = pos
