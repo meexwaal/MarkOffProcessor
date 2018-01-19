@@ -228,17 +228,19 @@ void loop() {
   delay(50);
 
   uint16_t x_force = analogRead(ACCELEROMETER_X);
-  if (x_force < 370 || x_force > 560) {
+  if (x_force < 340 || x_force > 560) {
     Serial.println("x_force not what we expected, it was:");
     Serial.println(x_force);
   }
-  x_force -= 370;
+  x_force -= 337;
+  x_force = max(min(x_force, 255), 0);
   uint16_t y_force = analogRead(ACCELEROMETER_Y);
   if (y_force < 370 || y_force > 560) {
     Serial.println("y_force not what we expected, it was:");
     Serial.println(y_force);
   }
-  y_force -= 370;
+  y_force -= 337;
+  y_force = max(min(y_force, 255), 0);
 
   x_force = (uint8_t) x_force;
   y_force = (uint8_t) y_force;

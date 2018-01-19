@@ -8,7 +8,7 @@ import math
 
 
 ROTATION_SCALE = 190
-ROTATION_MID = 465 - 370
+ROTATION_MID = 465
 MAX_CLOSE_TO_POINT = .3
 
 class robot:
@@ -64,7 +64,8 @@ class robot:
     # update should be called at a regular interval
     # (derivative should be wrt time, so needs a constant delta-T)
     def update(self, pos):
-        self.pos = pos
+        if(pos != None):
+            self.pos = pos
 
         self.updateRot()
 
@@ -77,9 +78,10 @@ class robot:
 
     def updateRot(self):
         inp = self.bt.read_last()
+        print("raw accel: ", inp)
         if inp != None:
-            self.rot = (-(inp[1] - ROTATION_MID),
-                        -(inp[0] - ROTATION_MID))
+            self.rot = ((inp[1] + 337 - ROTATION_MID), # 337 because that's what we sub'd in the arduino
+                        (inp[0] + 337 - ROTATION_MID))
 
     def changeMode(self, newMode):
         self.mode = newMode
@@ -119,6 +121,7 @@ class robot:
     def followLine(self, path=None):
         if path != None:
             self.setPath(path)
+            self.smoothPath()
         self.changeMode(self.Mode.LINE_FOLLOW)
         
     def rotateTo(self, angle=None):

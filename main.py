@@ -53,12 +53,13 @@ def main():
         img = processImage(frame)
 
         botLoc = tracking.track(frame)
-        print("bot location:", botLoc)
+        # print("bot location:", botLoc)
         
-        if botLoc == None:
+        if botLoc == (None, None):
             continue
         
         bot.update(botLoc)
+        print("rotation: ", bot.rot)
 
 if __name__=="__main__":
     main()
