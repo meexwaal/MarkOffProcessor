@@ -9,13 +9,13 @@ import math
 
 ROTATION_SCALE = 190
 ROTATION_MID = 465 - 370
+MAX_CLOSE_TO_POINT = .3
 
 class robot:
 
     # Number of points from the path to consider for distance
     # (to keep the bot from getting confused)
     numPathPts = 20
-    MAX_CLOSE_TO_POINT = .3;
 
     class Mode(Enum):
         STILL = 0
@@ -50,36 +50,36 @@ class robot:
         self.bt = wrapper.bt()
 
         # PID to do line following
-        linePID = PID.PID()
+        self.linePID = PID.PID()
 
         # PID to do rotating to an angle
-        rotPID = PID.PID()
+        self.rotPID = PID.PID()
 
     def setPos(self, pos):
         self.pos = pos
     def setPath(self, path):
+        self.start_point_index = 0
         self.path = path
 
     # update should be called at a regular interval
     # (derivative should be wrt time, so needs a constant delta-T)
     def update(self, pos):
         self.pos = pos
-        if rot != None:
-            self.rot = rot
+
+        self.updateRot()
 
         if self.mode == self.Mode.LINE_FOLLOW:
             self.lineSpeed = self.linePID.update(self.getDistance())
         elif self.mode == self.Mode.ROTATING:
             self.angSpeed = self.rotPID.update(self.anglify(self.rot))
 
-        self.updateRot()
         self.updateMotors()
 
     def updateRot(self):
-        inp = bt.read_last()
+        inp = self.bt.read_last()
         if inp != None:
-            self.rot = (-(inp[1] - ROTATION_MIDDLE),
-                        -(inp[0] - ROTATION_MIDDLE))
+            self.rot = (-(inp[1] - ROTATION_MID),
+                        -(inp[0] - ROTATION_MID))
 
     def changeMode(self, newMode):
         self.mode = newMode
@@ -131,10 +131,10 @@ class robot:
 
     # getDistance : void -> real
     def getDistance(self):
-        cut_path_end_index = min(start_point_index + self.numPathPts,len(self.path))
-        if(cut_path_end_index <= start_point_index): self.stop
+        cut_path_end_index = min(self.start_point_index + self.numPathPts,len(self.path))
+        if(cut_path_end_index <= self.start_point_index): self.stop
 
-        cutPath = self.path[start_point_index:cut_path_end_index]
+        cutPath = self.path[self.start_point_index:cut_path_end_index]
 
         d,shortest_distance_to_point,shortest_point_index = distance(self.pos, cutPath, self.rot)
 

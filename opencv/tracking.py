@@ -25,18 +25,19 @@ def track(frame, show_windows=False):
         cx = int(M["m10"]/M["m00"])
         cy = int(M["m01"]/M["m00"])
 
-        # Draw centroid
-        cv2.circle(frame, (cx, cy), 10, (255, 0, 0), -1)
-
-
+            
     if show_windows:
         print(M["m00"] / 255, cx, cy)
+
+        # Draw centroid
+        cv2.circle(frame, (cx, cy), 10, (255, 0, 0), -1)
 
         cv2.imshow('frame', frame)
         cv2.imshow('mask', mask)
         cv2.imshow('res', res)
+        
 
-    return cx, cy
+    return (cx, cy)
 
 if __name__ == "__main__":
     while(True):
