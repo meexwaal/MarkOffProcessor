@@ -37,7 +37,7 @@ class Vector(object):
 
 
 # mystery ugly trapezoid to rectangle functionq
-def approx_persp(px, py, new_width=COORD_WIDTH, new_height=COORD_HEIGHT):
+def approx_persp(px, py, refpt, new_width=COORD_WIDTH, new_height=COORD_HEIGHT):
     scaley = (py - refpt[1][1]) / (refpt[0][1]-refpt[1][1])
     wx = refpt[1][0] - scaley * (refpt[1][0]-refpt[0][0])
     dx12 = refpt[2][0] - refpt[1][0]
@@ -89,7 +89,7 @@ def click(event, x, y, flags, param):
             print(x, y)
             refpt.append((x,y))
         else:
-            print(x, y, map_persp(x, y, refpt))
+            print(x, y, approx_persp(x, y, refpt))
 
 
 cv2.namedWindow("frame")
