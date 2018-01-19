@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 #from calibrate import *
 
-masking = False
-maskcount = None
-maskframes = 60
-mask = None
-blurSize = 5
+global masking = False
+global maskcount = None
+global maskframes = 60
+global mask = None
+global blurSize = 5
 
 def ImageToBlackList(mat):
   list = []

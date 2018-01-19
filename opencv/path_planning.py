@@ -1,7 +1,7 @@
 import queue
 
-neighborLists = {}
-good = []
+global neighborLists = {}
+global good = []
 
 def checkCameFrom(cameFrom):
   for n in cameFrom:
