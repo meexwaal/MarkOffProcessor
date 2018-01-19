@@ -27,9 +27,9 @@ while(True):
     # ls = np.clip(ls, -8, 7)
     # rs = np.clip(rs, -8, 7)
 
-    lstr = int("0" + np.binary_repr(-ls, width=7), 2)
-    rstr = int("1" + np.binary_repr(-rs, width=7), 2)
-    print(-ls)
-    print(-rs)
+    lstr = int("0" + np.binary_repr(ls, width=7), 2)
+    rstr = int("1" + np.binary_repr(rs, width=7), 2)
+    print(ls)
+    print(rs)
     bt.write(int(lstr))
     bt.write(int(rstr))

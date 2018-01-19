@@ -50,10 +50,10 @@ class robot:
         self.bt = wrapper.bt()
 
         # PID to do line following
-        self.linePID = PID.PID()
+        self.linePID = PID.PID(0.01, 0, 0)
 
         # PID to do rotating to an angle
-        self.rotPID = PID.PID()
+        self.rotPID = PID.PID(0, 0, 0)
 
     def setPos(self, pos):
         self.pos = pos
@@ -78,7 +78,6 @@ class robot:
 
     def updateRot(self):
         inp = self.bt.read_last()
-        print("raw accel: ", inp)
         if inp != None:
             self.rot = ((inp[1] + 337 - ROTATION_MID), # 337 because that's what we sub'd in the arduino
                         (inp[0] + 337 - ROTATION_MID))
@@ -145,6 +144,7 @@ class robot:
             and shortest_point_index > 3):
             self.start_point_index += shortest_point_index - 3
 
+        print("distance to line:", d)
         return d
 
 

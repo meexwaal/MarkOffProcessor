@@ -59,7 +59,6 @@ def main():
             continue
         
         bot.update(botLoc)
-        print("rotation: ", bot.rot)
 
 if __name__=="__main__":
     main()

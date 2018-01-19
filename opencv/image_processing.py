@@ -120,6 +120,8 @@ def findPath(img,start):
         if last is not None:
             cv2.line(img,last,p,(0,255,0)if i==1 else(255,0,0))
         last = p
+    cv2.line(img,start,start,(255,0,0), 3)
     cv2.imshow('path', img)
+    cv2.waitKey(0)
     return path
           
