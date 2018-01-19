@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 #from calibrate import *
+from path_planning import *
 
 masking = False
 maskcount = None
@@ -98,7 +99,8 @@ def coordChange(p,blocksize):
 def findPath(img,start):
     #TODO
     blocksize = 8
-    goodMoves = ImageToBlackList(ImageBlocky(img,blocksize))
+    mat = ImageBlocky(img,blocksize)
+    goodMoves = ImageToBlackList(mat)
     badMoves = ImageToBlackList(ImageBlocky(mask,blocksize))
     img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
     for g in goodMoves:
@@ -108,7 +110,7 @@ def findPath(img,start):
         p = coordChange(b,blocksize)
         cv2.line(img,p,p,(0,0,255))
     (x,y) = start
-    path = planPath((x//blockstart,y//blockstart),goodMoves,badMoves,len(mat),len(mat[0]))
+    path = planPath((x//blocksize,y//blocksize),goodMoves,badMoves,len(mat),len(mat[0]))
     last = None
     for i in range(len(path)):
         p = coordChange(path[i],blocksize)
