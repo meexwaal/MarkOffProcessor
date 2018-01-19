@@ -8,8 +8,8 @@ def track(frame, show_windows=False):
 
     # define range of color in HSV
     # currently HOT PINK
-    lower_color = np.array([5,50,50])
-    upper_color = np.array([20,255,255])
+    lower_color = np.array([160,50,50])
+    upper_color = np.array([180,255,255])
     # Threshold the HSV image to get only colors
     mask = cv2.inRange(hsv, lower_color, upper_color)
     # Bitwise-AND mask and original image
@@ -28,10 +28,10 @@ def track(frame, show_windows=False):
         # Draw centroid
         cv2.circle(frame, (cx, cy), 10, (255, 0, 0), -1)
 
-        print(M["m00"]/255, cx, cy)
-
 
     if show_windows:
+        print(M["m00"] / 255, cx, cy)
+
         cv2.imshow('frame', frame)
         cv2.imshow('mask', mask)
         cv2.imshow('res', res)
