@@ -4,9 +4,10 @@ import PID
 from enum import Enum
 import wrapper
 from numpy import clip, binary_repr
+import math
 
 ROTATION_SCALE = 190
-ROTATION_MID = 465
+ROTATION_MID = 465 - 370
 
 class robot:
 
@@ -76,8 +77,8 @@ class robot:
     def updateRot(self):
         inp = bt.read_last()
         if inp != None:
-            self.rot = ((inp[0] - ROTATION_MIDDLE)/ROTATION_SCALE,
-                        (inp[1] - ROTATION_MIDDLE)/ROTATION_SCALE)
+            self.rot = (-(inp[1] - ROTATION_MIDDLE),
+                        -(inp[0] - ROTATION_MIDDLE))
 
     def changeMode(self, newMode):
         self.mode = newMode
@@ -104,9 +105,11 @@ class robot:
 
     def updateMotors(self):
         lm, rm = self.getMotors()
-        lb = binary_repr(int(lm*7.99), width=4) # for DEEP and MEANINGFUL reasons
-        rb = binary_repr(int(rm*7.99), width=4)
-        self.bt.write(int(lb+rb, 2))
+        
+        lb = binary_repr(int(lm*(64-0.001)), width=7) # for DEEP and MEANINGFUL reasons
+        rb = binary_repr(int(rm*(64-0.001)), width=7)
+        self.bt.write(int("0"+lb, 2))
+        self.bt.write(int("1"+rb, 2))
         
     def smoothPath(self):
         self.path = pathSmooth(self.path)
@@ -127,9 +130,11 @@ class robot:
 
     # getDistance : void -> real
     def getDistance(self):
-        cutPath = (self.path[start_point_index:start_point_index + self.numPathPts]
-                   if self.numPathPts < len(self.path)
-                   else self.path)
+        cut_path_end_index = min(start_point_index + self.numPathPts,len(self.path))
+        if(cut_path_end_index <= start_point_index): self.stop
+
+        cutPath = self.path[start_point_index:cut_path_end_index]
+
         d,shortest_distance_to_point,shortest_point_index = distance(self.pos, cutPath, self.rot)
 
         if (shortest_distance_to_point < MAX_CLOSE_TO_POINT 
@@ -141,4 +146,4 @@ class robot:
 
     def anglify(self, rot):
         # TODO
-        return 0
+        return math.atan2(rot[1],rot[0])

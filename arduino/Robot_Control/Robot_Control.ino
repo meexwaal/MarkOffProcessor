@@ -3,15 +3,11 @@
 #include <bluefruit.h>
 int MOTOR_SPEED_MODIFIER = 1;
 int ZERO_SPD = 90;
-int ACCELEROMETER_X = 2;
-int ACCELEROMETER_Y = 3;
-int ACCELEROMETER_Z = 4;
-int LEFT_SERVO_PIN = 7;
-int RIGHT_SERVO_PIN = 11;
-int8_t right_motor_spd = ZERO_SPD;
-int8_t left_motor_spd = ZERO_SPD;
-
-uint16_t cccd = 0;
+int ACCELEROMETER_X = 4; // A2
+int ACCELEROMETER_Y = 3; // A1
+int ACCELEROMETER_Z = 2; // A0
+int LEFT_SERVO_PIN = 30;
+int RIGHT_SERVO_PIN = 27;
 
 Servo left_servo;
 Servo right_servo;
@@ -31,6 +27,8 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason);
 void setup() {
   left_servo.attach(LEFT_SERVO_PIN);
   right_servo.attach(RIGHT_SERVO_PIN);
+  left_servo.write(ZERO_SPD);
+  right_servo.write(ZERO_SPD);
 
   Serial.begin(115200);
   Serial.println("Arduino setting up and stuff hi MAX :)");
@@ -181,12 +179,27 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
 void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
 {
-  cccd = cccd_value;
   // Display the raw request packet
   Serial.print("CCCD Updated: ");
   //Serial.printBuffer(request->data, request->len);
-  Serial.print(cccd_value);
-  Serial.println("");
+  Serial.println(cccd_value);
+
+  int8_t infoByte = (int8_t)((cccd_value >> 8) & 0xFF);
+  Serial.print("infoByte"); Serial.println(infoByte, BIN);
+  int8_t speedByte = sign_extend_nibble(infoByte);
+  Serial.print("spedByte"); Serial.println(speedByte, BIN);
+
+  if (infoByte & (int8_t)0x80) {
+    // 1st bit is 1, so this byte is for the right motor
+    int right_motor_speed = (ZERO_SPD - MOTOR_SPEED_MODIFIER * speedByte);
+    Serial.println("Rite motor speed:"); Serial.println(right_motor_speed);
+    right_servo.write(right_motor_speed);
+  } else {
+    // 1st bit is 0, so this byte is for the left motor
+    int left_motor_speed = (ZERO_SPD + MOTOR_SPEED_MODIFIER * speedByte);
+    Serial.println("Left motor speed:"); Serial.println(left_motor_speed);
+    left_servo.write(left_motor_speed);
+  }
 
   // Check the characteristic this CCCD update is associated with in case
   // this handler is used for multiple CCCD records.
@@ -201,37 +214,18 @@ void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
 
 int8_t sign_extend_nibble(int8_t nibble)
 {
-  if (nibble & (int8_t)0x8) //negative nibble
+  if (nibble & (int8_t)0x40) //negative nibble
     //pad with ones
   {
-    return nibble | (int8_t)0xF0;
+    return nibble | (int8_t)0x80;
   }
-  else return nibble;
-}
-
-int8_t getByte() {
-  return 0x3c; //00111100 for testing
+  else {
+    return nibble & (int8_t)0x7F;
+  }
 }
 
 void loop() {
-  delay(5);
-
-  // put your main code here, to run repeatedly:
-  int8_t infoByte = (int8_t)((cccd >> 8) & 0xFF);
-  Serial.print("infoByte"); Serial.println(infoByte, BIN);
-  int8_t left_byte = sign_extend_nibble((infoByte >> 4) & 0x0F);
-  Serial.print("leftbyte"); Serial.println(left_byte, BIN);
-  int8_t right_byte = sign_extend_nibble(infoByte & 0x0F);
-  Serial.print("riteByte"); Serial.println(right_byte, BIN);
-
-
-  int left_motor_speed = MOTOR_SPEED_MODIFIER * (ZERO_SPD + left_byte); // should be 93 from test
-  int right_motor_speed = MOTOR_SPEED_MODIFIER * (ZERO_SPD + right_byte); // should be 86 from test
-  Serial.println("Reft motor speed:"); Serial.println(left_motor_speed);
-  Serial.println("Right motor speed:"); Serial.println(right_motor_speed);
-
-  left_servo.write(left_motor_speed);
-  right_servo.write(right_motor_speed);
+  delay(50);
 
   uint16_t x_force = analogRead(ACCELEROMETER_X);
   if (x_force < 370 || x_force > 560) {
@@ -258,7 +252,7 @@ void loop() {
     // If it is connected but CCCD is not enabled
     // The characteristic's value is still updated although notification is not sent
     if ( hrmc.notify(force_data, sizeof(force_data)) ) {
-      Serial.print("Forces updated: {x,y}");
+      //Serial.print("Forces updated: {x,y}");
     } else {
       Serial.println("ERROR: Notify not set in the CCCD or not connected!");
     }
