@@ -3,17 +3,14 @@ import cv2
 
 cap = cv2.VideoCapture(1)
 
-while(True):
-    # Capture frame-by-frame
-    ret, frame = cap.read()
-
+def track(frame, show_windows=False):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     # define range of color in HSV
     # currently HOT PINK
-    lower_color = np.array([150,50,50])
-    upper_color = np.array([180,255,255])
-    # Threshold the HSV image to get only blue colors
+    lower_color = np.array([5,50,50])
+    upper_color = np.array([20,255,255])
+    # Threshold the HSV image to get only colors
     mask = cv2.inRange(hsv, lower_color, upper_color)
     # Bitwise-AND mask and original image
     res = cv2.bitwise_and(frame,frame, mask= mask)
@@ -21,6 +18,7 @@ while(True):
     # If not enough color detected, don't draw centroid
     TRACKER_THRESHOLD = 500
 
+    cx, cy = None, None
     # Calculate centroid of mask
     M = cv2.moments(mask)
     if M["m00"]/255 >= TRACKER_THRESHOLD:
@@ -33,14 +31,23 @@ while(True):
         print(M["m00"]/255, cx, cy)
 
 
-    cv2.imshow('frame', frame)
-    cv2.imshow('mask', mask)
-    cv2.imshow('res', res)
+    if show_windows:
+        cv2.imshow('frame', frame)
+        cv2.imshow('mask', mask)
+        cv2.imshow('res', res)
 
+    return cx, cy
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+if __name__ == "__main__":
+    while(True):
+        # Capture frame-by-frame
+        ret, frame = cap.read()
 
-# When everything done, release the capture
-cap.release()
-cv2.destroyAllWindows()
+        track(frame, show_windows=True)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # When everything done, release the capture
+    cap.release()
+    cv2.destroyAllWindows()

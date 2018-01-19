@@ -4,20 +4,24 @@ from image_processing import *
 from path_planning import *
 from robot import *
 
-def main():
-    cap = cv2.VideoCapture(1)
 
-    bot = robot()
+def main():
+    cap = cv2.VideoCapture(-1)
+
+    #bot = robot()
 
     # mask
     while(True):
       ret,frame = cap.read()
+      if frame is None:
+        print("frame is None")
+        #continue
       img = processImage(frame)
       cv2.imshow('Image',img)
-      key = cv2.waitKey(0) & 0xFF
-      if not isMasking():
+      key = cv2.waitKey(1) & 0xFF
+      if doneBuilding():
         if key == ord('m'):
-          toggleMask()
+          toggleMask(img)
         if key == ord('p'):
           break
     

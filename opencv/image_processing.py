@@ -4,7 +4,7 @@ import numpy as np
 from path_planning import *
 
 masking = False
-maskcount = None
+maskcount = 61
 maskframes = 60
 mask = None
 blurSize = 5
@@ -33,7 +33,7 @@ def ImageBlocky(arr, blocksize):
   return grid
 
 def processImage(frame):
-    img = frame
+    global blurSize,maskcount,mask
     # convert to gray
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # apply median filter
@@ -43,20 +43,22 @@ def processImage(frame):
         cv2.THRESH_BINARY,11,2)
     # apply median filter
     img = cv2.medianBlur(img,blurSize)
-    # handle maskingn
+    # handle masking
     if masking:
       if maskcount < maskframes:
         maskcount = maskcount + 1
-        mask = cv2.bitwises_and(img,mask)
+        mask = cv2.bitwise_and(img,mask)
       if maskcount == maskframes:
-        mask = cv2.erode(mask,kernel)
+        mask = cv2.erode(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)))
         maskcount = maskcount + 1
         blurSize = 3
       img = cv2.bitwise_or(img,cv2.bitwise_not(mask))
+      cv2.imshow('Mask',mask)
 
     return img
 
 def toggleMask(img):
+  global masking, blurKernel, maskcount, mask
   if masking:
     masking = False
     blurKernel = 5
@@ -65,8 +67,8 @@ def toggleMask(img):
     maskcount = 0
     mask = img
 
-def isMasking():
-  return masking
+def doneBuilding():
+  return maskcount > maskframes
 
 def findRobot(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
