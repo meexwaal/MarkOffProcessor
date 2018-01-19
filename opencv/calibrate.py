@@ -3,11 +3,11 @@
 import numpy as np
 import cv2
 
-global WIN_WIDTH, WIN_HEIGHT = 640, 480
-global COORD_WIDTH, COORD_HEIGHT = 100, 70
-global refpt = []
+WIN_WIDTH, WIN_HEIGHT = 640, 480
+COORD_WIDTH, COORD_HEIGHT = 100, 70
+refpt = []
 
-global cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)
 
 # ???
 class Vector(object):

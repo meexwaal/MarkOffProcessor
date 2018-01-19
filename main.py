@@ -17,7 +17,7 @@ def main():
       key = cv2.waitKey(0) & 0xFF
       if not isMasking():
         if key == ord('m'):
-          toggleMask()
+          toggleMask(img)
         if key == ord('p'):
           break
     

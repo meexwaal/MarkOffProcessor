@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 #from calibrate import *
 
-global masking = False
-global maskcount = None
-global maskframes = 60
-global mask = None
-global blurSize = 5
+masking = False
+maskcount = None
+maskframes = 60
+mask = None
+blurSize = 5
 
 def ImageToBlackList(mat):
   list = []
@@ -32,6 +32,7 @@ def ImageBlocky(arr, blocksize):
   return grid
 
 def processImage(frame):
+    global blurSize
     img = frame
     # convert to gray
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

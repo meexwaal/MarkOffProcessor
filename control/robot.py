@@ -6,8 +6,8 @@ import wrapper
 from numpy import clip, binary_repr
 import math
 
-global ROTATION_SCALE = 190
-global ROTATION_MID = 465 - 370
+ROTATION_SCALE = 190
+ROTATION_MID = 465 - 370
 
 class robot:
 
