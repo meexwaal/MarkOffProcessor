@@ -7,13 +7,13 @@ import tracking
 
 
 def main():
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 
     # mask
     while(True):
       ret,frame = cap.read()
       if frame is None:
-        print("frame is None")
+        #print("frame is None")
         continue
       img = processImage(frame)
       cv2.imshow('Image',img)

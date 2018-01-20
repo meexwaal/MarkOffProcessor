@@ -99,6 +99,7 @@ def coordChange(p,blocksize):
   return (y*blocksize+blocksize//2,x*blocksize+blocksize//2)
 
 def findPath(img,start):
+    global mask
     #TODO
     blocksize = 8
     mat = ImageBlocky(img,blocksize)
